@@ -1,0 +1,22 @@
+body {
+    background-color: #f9f9f9;
+  }
+  
+  .card {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  .favorite.active i {
+    color: red;
+  }
+  
+  .quantité {
+    font-weight: bold;
+  }
+
+  .card-img-top {
+    height: 450px; /* Fixe une hauteur pour toutes les images */
+    width: 100%; /* L'image prend toute la largeur du cadre */
+    object-fit: cover; /* Remplit le cadre sans déformer l'image */
+    border-bottom: 1px solid #ddd; /* Optionnel : ligne de séparation esthétique */
+  }
