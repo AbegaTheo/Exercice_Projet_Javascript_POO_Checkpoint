@@ -1,94 +1,101 @@
 // Classe représentant un produit
-class Product {
-  constructor(id, name, price) {
-    this.id = id;
-    this.name = name;
-    this.price = price;
+class Produit {
+  constructor(id, nom, prix) {
+    this.id = id; // Identifiant unique du produit
+    this.nom = nom; // Nom du produit
+    this.prix = prix; // Prix unitaire du produit
   }
 }
 
 // Classe représentant un élément du panier
-class ShoppingCartItem {
-  constructor(product, quantity) {
-    this.product = product;
-    this.quantity = quantity;
+class ElementPanier {
+  constructor(produit, quantite) {
+    this.produit = produit; // Produit associé à cet élément
+    this.quantite = quantite; // Quantité de ce produit dans le panier
   }
 
-  getTotalPrice() {
-    return this.product.price * this.quantity;
+  // Calculer le prix total de cet élément (prix unitaire * quantité)
+  obtenirPrixTotal() {
+    return this.produit.prix * this.quantite;
   }
 }
 
-// Classe représentant le panier
-class ShoppingCart {
+// Classe représentant le panier d'achat
+class Panier {
   constructor() {
-    this.items = [];
+    this.elements = []; // Tableau pour stocker les éléments du panier
   }
 
-  addItem(product, quantity = 1) {
-    const existingItem = this.items.find(item => item.product.id === product.id);
-    if (existingItem) {
-      existingItem.quantity += quantity;
+  // Ajouter un produit au panier (ou augmenter sa quantité)
+  ajouterElement(produit, quantite = 1) {
+    const elementExistant = this.elements.find(element => element.produit.id === produit.id);
+    if (elementExistant) {
+      // Si le produit existe déjà, augmenter la quantité
+      elementExistant.quantite += quantite;
     } else {
-      this.items.push(new ShoppingCartItem(product, quantity));
+      // Sinon, ajouter un nouvel élément au panier
+      this.elements.push(new ElementPanier(produit, quantite));
     }
   }
 
-  removeItem(productId) {
-    this.items = this.items.filter(item => item.product.id !== productId);
+  // Supprimer un produit du panier par son ID
+  supprimerElement(idProduit) {
+    this.elements = this.elements.filter(element => element.produit.id !== idProduit);
   }
 
-  getTotalPrice() {
-    return this.items.reduce((total, item) => total + item.getTotalPrice(), 0);
+  // Calculer le prix total du panier
+  obtenirPrixTotal() {
+    return this.elements.reduce((total, element) => total + element.obtenirPrixTotal(), 0);
   }
 }
 
 // === Intégration avec le DOM ===
 
 // Instancier le panier
-const cart = new ShoppingCart();
+const panier = new Panier();
 
 // Récupérer les produits à partir de l'HTML
-const productCards = document.querySelectorAll(".card");
+const cartesProduits = document.querySelectorAll(".card");
 
-productCards.forEach((card, index) => {
-  const name = card.querySelector(".card-title").textContent;
-  const price = parseInt(card.querySelector(".prix-unitaire").textContent);
-  const product = new Product(index + 1, name, price);
+cartesProduits.forEach((carte, index) => {
+  // Extraire les informations du produit depuis l'HTML
+  const nom = carte.querySelector(".card-title").textContent; // Récupère le nom du produit
+  const prix = parseInt(carte.querySelector(".prix-unitaire").textContent); // Récupère le prix unitaire
+  const produit = new Produit(index + 1, nom, prix); // Créer une instance de produit avec un ID unique
 
-  const quantityElement = card.querySelector(".quantité");
+  const elementQuantite = carte.querySelector(".quantité"); // Élément affichant la quantité
 
-  // Bouton +
-  card.querySelector(".plus").addEventListener("click", () => {
-    cart.addItem(product, 1);
-    quantityElement.textContent = parseInt(quantityElement.textContent) + 1;
-    updateTotalPrice();
+  // Bouton + : Ajouter une unité de ce produit
+  carte.querySelector(".plus").addEventListener("click", () => {
+    panier.ajouterElement(produit, 1); // Ajouter au panier
+    elementQuantite.textContent = parseInt(elementQuantite.textContent) + 1; // Mettre à jour l'affichage de la quantité
+    mettreAJourPrixTotal(); // Mettre à jour le prix total affiché
   });
 
-  // Bouton -
-  card.querySelector(".minus").addEventListener("click", () => {
-    if (parseInt(quantityElement.textContent) > 0) {
-      cart.addItem(product, -1); // Réduit la quantité
-      quantityElement.textContent = parseInt(quantityElement.textContent) - 1;
-      updateTotalPrice();
+  // Bouton - : Réduire la quantité de ce produit
+  carte.querySelector(".minus").addEventListener("click", () => {
+    if (parseInt(elementQuantite.textContent) > 0) {
+      panier.ajouterElement(produit, -1); // Réduire la quantité dans le panier
+      elementQuantite.textContent = parseInt(elementQuantite.textContent) - 1; // Mettre à jour l'affichage
+      mettreAJourPrixTotal(); // Mettre à jour le prix total affiché
     }
   });
 
-  // Bouton supprimer
-  card.querySelector(".remove").addEventListener("click", () => {
-    cart.removeItem(product.id); // Supprime du panier
-    card.remove(); // Supprime l'élément HTML du produit
-    updateTotalPrice();
+  // Bouton supprimer : Retirer complètement ce produit
+  carte.querySelector(".remove").addEventListener("click", () => {
+    panier.supprimerElement(produit.id); // Supprimer du panier
+    carte.remove(); // Supprimer l'élément HTML correspondant au produit
+    mettreAJourPrixTotal(); // Mettre à jour le prix total affiché
   });
 
-  // Bouton like
-  card.querySelector(".favorite").addEventListener("click", () => {
-    card.querySelector(".favorite").classList.toggle("active");
+  // Bouton like : Marquer ce produit comme favori
+  carte.querySelector(".favorite").addEventListener("click", () => {
+    carte.querySelector(".favorite").classList.toggle("active"); // Basculer la classe "active" pour indiquer un favori
   });
 });
 
-// Met à jour le prix total dans le DOM
-function updateTotalPrice() {
-  const totalPriceElement = document.querySelector("#prix-total");
-  totalPriceElement.textContent = `${cart.getTotalPrice()} XOF`;
+// Fonction pour mettre à jour le prix total dans le DOM
+function mettreAJourPrixTotal() {
+  const elementPrixTotal = document.querySelector("#prix-total"); // Élément affichant le prix total
+  elementPrixTotal.textContent = `${panier.obtenirPrixTotal()} XOF`; // Mettre à jour avec le prix total calculé
 }
